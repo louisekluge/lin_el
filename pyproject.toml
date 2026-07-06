@@ -10,7 +10,7 @@ dependencies = ["pyvista[jupyter]==0.46.3", "trame-server==3.6.3", "tinyda==0.9.
 # ------------------------------------------------------------------------------------- #
 [tool.pixi.workspace]
 channels = ["conda-forge"]
-platforms = ["osx-arm64"]
+platforms = ["osx-arm64", "linux-64"]
 preview = ["pixi-build"]
 
 
