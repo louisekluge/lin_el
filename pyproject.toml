@@ -1,0 +1,35 @@
+[project]
+authors = [{name = "Felix Racz, Louise Kluge", email = "louise.kluge@kit.edu"}]
+description = "Figures for my thesis"
+name = "figs"
+requires-python = ">=3.10"
+dependencies = ["pyvista[jupyter]==0.46.3", "trame-server==3.6.3", "tinyda==0.9.21", "ray>=2.54.0,<3", "corner>=2.2.3,<3"]
+
+# ------------------------------------------------------------------------------------- #
+#                                      PIXI BUILD                                       #
+# ------------------------------------------------------------------------------------- #
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["osx-arm64"]
+preview = ["pixi-build"]
+
+
+# ------------------------------------------------------------------------------------- #
+#                                   PIXI DEPENDENCIES                                   #
+# ------------------------------------------------------------------------------------- #
+
+# ---------------------------- SHARED PACKAGE DEPENDENCIES ---------------------------- #
+
+[tool.pixi.dependencies]
+fenics-dolfinx = ">=0.10.0,<0.11.0"
+numpy = ">=1.26.0, <1.27.0"
+scipy = ">=1.15.2,<2"
+pip = ">=25.1.1,<26"
+ipykernel = ">=6.15.2,<7"
+tqdm = ">=4.67.3,<5"
+adios4dolfinx = "*"
+scikit-learn = ">=1.8.0,<2"
+
+
+
+
