@@ -10,5 +10,8 @@ results/
 # Old Scripts 
 obsolete/
 
+# Old results 
+trash/
+
 # Maybe relevant later
 perspectives/
