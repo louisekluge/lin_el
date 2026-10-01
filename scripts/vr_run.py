@@ -33,6 +33,7 @@ import tinyDA as tda  # noqa: E402
 
 from lin_el.models import QOI_NAMES  # noqa: E402
 from lin_el.problem import build_problem  # noqa: E402
+from lin_el.sampling import make_adaptive_metropolis  # noqa: E402
 
 warnings.filterwarnings("ignore", message=".*qoi group is not defined.*")
 
@@ -52,6 +53,11 @@ p.add_argument("--subchain-length", type=int, default=10)
 p.add_argument("--no-randomize", action="store_true",
                help="fixed subchain length (randomised is what Eq. 21 assumes)")
 p.add_argument("--no-aem", action="store_true", help="disable the adaptive error model")
+p.add_argument("--c0", default=None,
+               help="comma-separated per-parameter proposal sd; overrides the "
+                    "Laplace estimate")
+p.add_argument("--no-laplace", action="store_true",
+               help="start adaptive Metropolis from the identity instead")
 p.add_argument("--tag", default="", help="label for the output filename")
 p.add_argument("--outdir", default=_DEFAULT_OUTDIR)
 args = p.parse_args()
@@ -89,8 +95,10 @@ problem = build_problem(n_levels=max(levels) + 1)
 posteriors = problem.posteriors(levels, adaptive_coarse=not args.no_aem)
 
 np.random.seed(4242 + args.rep)
-proposal = tda.AdaptiveMetropolis(
-    C0=np.eye(problem.true_parameters.size), t0=100, sd=None, epsilon=1e-6
+c0 = (np.diag([float(s) ** 2 for s in args.c0.split(",")])
+      if args.c0 else None)
+proposal = make_adaptive_metropolis(
+    problem, c0=c0, laplace_level=None if args.no_laplace else 0
 )
 
 kwargs = dict(

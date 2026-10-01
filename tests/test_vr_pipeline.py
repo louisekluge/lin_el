@@ -25,7 +25,7 @@ def run(outdir, levels, rep):
                       "QOI_NAMES = ('tip_deflection','mean_von_mises','compliance')")
     src = src.replace(
         "sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))",
-        f"sys.path.insert(0, {HERE!r})")
+        f"sys.path.insert(0, {ROOT!r}); sys.path.insert(0, {HERE!r})")
     patched = os.path.join(outdir, "vr_run_mock.py")
     open(patched, "w").write(src)
     return subprocess.run(

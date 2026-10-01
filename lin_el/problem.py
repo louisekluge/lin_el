@@ -10,6 +10,7 @@ they are not repetitions of the same problem and pooling them is meaningless.
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -33,7 +34,11 @@ class LaminateProblem:
     true_parameters: np.ndarray
     noise_sd: float
     qoi_true: np.ndarray
+    # MAP on the coarsest level, filled in by build_problem. Used both as the
+    # chain's starting point and as the expansion point for the Laplace
+    # proposal covariance in lin_el.sampling.
     map_estimate: np.ndarray = field(default=None)
+    map_neg_log_posterior: float = field(default=None)
 
     @property
     def n_levels(self) -> int:
@@ -60,6 +65,45 @@ class LaminateProblem:
                 loglike = tda.AdaptiveGaussianLogLike(self.data, cov)
             out.append(tda.Posterior(self.prior, loglike, self.levels[idx]))
         return out
+
+
+def _compute_map(problem: LaminateProblem) -> tuple[np.ndarray, float]:
+    """Deterministic MAP on the coarsest level.
+
+    tda.get_MAP defaults to starting the optimiser at prior.rvs(). On this
+    posterior -- a thin ridge, corr(E1, E2) ~ -0.97 -- a simplex started
+    somewhere random stops at a different point along the ridge every time,
+    which makes both the chain's starting point and the Laplace proposal
+    covariance non-reproducible. Start from a fixed point and restart the
+    simplex until it stops moving, since a single pass tends to stall crawling
+    along the ridge rather than converging across it.
+    """
+    posterior = problem.posteriors([0], adaptive_coarse=False)[0]
+
+    def nlp(t):
+        return -posterior.create_link(np.asarray(t, dtype=float)).posterior
+
+    theta = np.array([75.0, 25.1])  # prior midpoints
+    for _ in range(5):
+        new = np.asarray(
+            tda.get_MAP(
+                posterior,
+                initial_parameters=theta,
+                method="Nelder-Mead",
+                options={"xatol": 1e-8, "fatol": 1e-10, "maxiter": 2000},
+            ),
+            dtype=float,
+        )
+        settled = np.allclose(new, theta, rtol=0.0, atol=1e-7)
+        theta = new
+        if settled:
+            break
+    else:
+        warnings.warn(
+            f"MAP restarts did not settle; using last point {theta}", RuntimeWarning
+        )
+
+    return theta, float(nlp(theta))
 
 
 def build_problem(n_levels: int = 3, seed: int = PROBLEM_SEED) -> LaminateProblem:
@@ -91,7 +135,5 @@ def build_problem(n_levels: int = 3, seed: int = PROBLEM_SEED) -> LaminateProble
         qoi_true=np.asarray(qoi_true, dtype=float),
     )
 
-    # MAP on the coarsest level: cheap, and only used as a starting point.
-    coarse_posterior = problem.posteriors([0], adaptive_coarse=False)[0]
-    problem.map_estimate = tda.get_MAP(coarse_posterior)
+    problem.map_estimate, problem.map_neg_log_posterior = _compute_map(problem)
     return problem
