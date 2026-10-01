@@ -5,3 +5,7 @@ __pycache__/
 results/
 *.xdmf
 *.h5
+
+
+# Old Scripts 
+obsolete/
