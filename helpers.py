@@ -72,7 +72,7 @@ def interpolate_nonmatching(
             dtype=np.int32,
         )
         interpolation_data = fem.create_interpolation_data(
-            self.V_to, self.V_fom, self._cells_V_to
+            V_to, V_from, cells_V_to
         )
     func_V_to.interpolate_nonmatching(func, cells_V_to, interpolation_data)
     func_V_to.x.scatter_forward()
