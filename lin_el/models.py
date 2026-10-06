@@ -237,7 +237,7 @@ def build_hierarchy(
     """
     (x0, y0), (x1, y1) = corners
     msh = mesh.create_rectangle(
-        MPI.COMM_WORLD,
+        MPI.COMM_SELF,
         [np.array([x0, y0]), np.array([x1, y1])],
         list(base_divisions),
     )
@@ -251,7 +251,7 @@ def build_hierarchy(
 
     # inset slightly so observation points stay strictly inside every level
     obs_msh = mesh.create_rectangle(
-        MPI.COMM_WORLD,
+        MPI.COMM_SELF,
         [[x0 + 0.05, y0 + 0.05], [x1 - 0.05, y1 - 0.05]],
         list(obs_divisions),
     )
