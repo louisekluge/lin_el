@@ -4,15 +4,26 @@ A single invocation = one independent repetition. The inverse problem is built
 under a fixed seed so every repetition targets the same posterior; only the
 sampler's randomness varies with --rep.
 
-Saves a small .npz holding, per level, the QoI chain and the promoted QoI
-chain, plus acceptance rates, ESS and timing. The heavy chain object is never
-pickled.
+Samples through lin_el/mlda_sampling.py rather than tda.sample, which gives
+
+  * exact acceptance per level, from the sampler's own flags, instead of
+    inferring it from state changes (that undercounts on fine levels and
+    overcounts on coarse ones)
+  * two levels run on DAChain, as with tda.sample (--two-level-chain mlda
+    switches to MLDAChain, whose two-level setup crashes with the adaptive
+    error model in tinyDA v0.3); three levels run on MLDAChain. Both export
+    the same keys, so the extraction below handles them alike
+  * a progress line every 1% and periodic checkpoints of the full chains, so
+    a job killed at the walltime leaves its chains behind
+
+Writes, under results/:
+  vr_<tag>_rep<NN>.npz         QoI per level, aligned and burned in, as
+                               plot_vr.py reads it; acceptance, pairing, ESS
+  chains_<tag>_rep<NN>.npz     full chains (parameters, QoI, stats) for every
+                               level's chain and promoted list, no burn-in,
+                               for comparing estimator formulations later
 
     python scripts/vr_run.py --rep 0 --levels 0,2 --subchain-length 10
-
-Requires the louisekluge/tinyDA fork: the VR extractors
-(get_twolevel_inference_data / get_multilevel_inference_data) do not exist in
-the released tinyda 0.9.21 on PyPI.
 """
 
 from __future__ import annotations
@@ -34,6 +45,8 @@ import tinyDA as tda  # noqa: E402
 from lin_el.models import QOI_NAMES  # noqa: E402
 from lin_el.problem import build_problem  # noqa: E402
 from lin_el.sampling import make_adaptive_metropolis  # noqa: E402
+from lin_el.mlda_sampling import (acceptance_rates, make_checkpointer,  # noqa: E402
+                                  pairing_fractions, sample_multilevel)
 
 warnings.filterwarnings("ignore", message=".*qoi group is not defined.*")
 
@@ -58,6 +71,9 @@ p.add_argument("--c0", default=None,
                     "Laplace estimate")
 p.add_argument("--no-laplace", action="store_true",
                help="start adaptive Metropolis from the identity instead")
+p.add_argument("--two-level-chain", default="da", choices=("da", "mlda"),
+               help="tinyDA chain for a two-level run (ignored for 3+ levels)")
+p.add_argument("--no-chains", action="store_true", help="skip the full-chain file")
 p.add_argument("--tag", default="", help="label for the output filename")
 p.add_argument("--outdir", default=_DEFAULT_OUTDIR)
 args = p.parse_args()
@@ -76,15 +92,11 @@ with open(probe, "w") as fh:
     fh.write("ok")
 os.remove(probe)
 
-for name in ("get_twolevel_inference_data", "get_multilevel_inference_data"):
-    if not hasattr(tda, name):
-        raise SystemExit(
-            f"tinyDA has no {name}: this needs the louisekluge/tinyDA fork, "
-            "not the released tinyda on PyPI"
-        )
-
+stem = os.path.join(outdir, f"vr_{tag}_rep{args.rep:02d}")
+# not vr_*: plot_vr.py globs vr_*.npz and expects every match to be a summary
+chainfile = os.path.join(outdir, f"chains_{tag}_rep{args.rep:02d}.npz")
 print(f"rep={args.rep} levels={levels} J={args.subchain_length} "
-      f"iters={args.iterations} burnin={burnin}")
+      f"iters={args.iterations} burnin={burnin}", flush=True)
 
 
 # ---------------------------------------------------------------------------
@@ -101,100 +113,70 @@ proposal = make_adaptive_metropolis(
     problem, c0=c0, laplace_level=None if args.no_laplace else 0
 )
 
-kwargs = dict(
-    iterations=args.iterations,
-    n_chains=1,
-    initial_parameters=problem.map_estimate,
-    subchain_length=args.subchain_length,
-    randomize_subchain_length=not args.no_randomize,
-)
-if not args.no_aem:
-    kwargs["adaptive_error_model"] = "state-independent"
+callback = None
+if not args.no_chains:
+    # ten checkpoints over the run; each write is O(chain length)
+    callback = make_checkpointer(chainfile,
+                                 every=max(1, args.iterations // 10))
 
 t0 = time.time()
-chain = tda.sample(posteriors, proposal, **kwargs)
+chain = sample_multilevel(
+    posteriors, proposal,
+    iterations=args.iterations,
+    subchain_lengths=args.subchain_length,
+    randomize_subchain_length=not args.no_randomize,
+    initial_parameters=problem.map_estimate,
+    adaptive_error_model=None if args.no_aem else "state-independent",
+    n_chains=1,
+    callback=callback,
+    two_level_chain=args.two_level_chain,
+)
 runtime = time.time() - t0
+if callback is not None:
+    callback(chain, args.iterations, args.iterations)     # final state
 
 
 # ---------------------------------------------------------------------------
-# Extraction
+# Extraction: aligned, burned-in QoI per level
 #
-# tinyDA takes two different code paths and the VR extractors differ with them:
-#   2 levels  -> sampler "DA",   get_twolevel_inference_data  (xarray Datasets)
-#   3+ levels -> sampler "MLDA", get_multilevel_inference_data (plain arrays)
-# Normalise both to {name: (n_draws, n_qoi) array}.
+# plot_vr.py pairs qoi__chain_l{k} row by row with qoi__promoted_l{k-1}, so
+# the alignment is done here, once. The top-level chain carries its initial
+# state, which no proposal produced, so under MLDAChain it is one longer than
+# its promoted partner and loses its first entry. DAChain seeds its promoted
+# list with that state too, so there the lengths already agree. Aligning by
+# length covers both; lower levels pair directly. Burn-in is
+# scaled to each level by chain length, so every term is cut at the same
+# point in the run.
 # ---------------------------------------------------------------------------
-
-def _ds_to_array(dataset, chain_idx=0):
-    """xarray Dataset with vars qoi_0..qoi_k -> (n_draws, n_qoi) array."""
-    keys = sorted(dataset.data_vars, key=lambda s: int(s.rsplit("_", 1)[-1]))
-    return np.column_stack([np.asarray(dataset[k].values)[chain_idx] for k in keys])
-
-
-def extract_qoi(chain, burnin):
-    sampler = chain["sampler"]
-    if sampler == "DA":
-        d = tda.get_twolevel_inference_data(chain, attribute="qoi", burnin=burnin)
-        return {
-            "chain_l0": _ds_to_array(d["chain_coarse"]),
-            "chain_l1": _ds_to_array(d["chain_fine"]),
-            "promoted_l0": _ds_to_array(d["promoted_coarse"]),
-        }
-    if sampler == "MLDA":
-        d = tda.get_multilevel_inference_data(chain, attribute="qoi", burnin=burnin)
-        out = {}
-        for key, value in d["chains"].items():
-            lvl = key.split("_")[0].replace("level", "")
-            out[f"chain_l{lvl}"] = np.atleast_2d(np.asarray(value, dtype=float))
-        for key, value in d["promoted"].items():
-            lvl = key.split("_")[0].replace("level", "")
-            out[f"promoted_l{lvl}"] = np.atleast_2d(np.asarray(value, dtype=float))
-        return out
-    raise RuntimeError(f"unexpected sampler {sampler!r}")
-
-
-def chain_key(chain, level, n_levels):
-    """Parameter-chain key: tinyDA names these three different ways."""
-    if chain["sampler"] == "MH":
-        return "chain_0"
-    if chain["sampler"] == "DA":
-        return "chain_fine_0" if level == n_levels - 1 else "chain_coarse_0"
-    return f"chain_l{level}_0"
-
-
-def acceptance_rates(chain, n_levels, burnin):
-    """Post-burn-in acceptance per level, from state changes.
-
-    sample() returns Link objects rather than acceptance flags, so a step
-    counts as accepted iff the parameter vector moved. burnin is in fine-level
-    iterations and is scaled to each level by the ratio of chain lengths.
-    """
-    as_array = lambda links: np.array([l.parameters for l in links], dtype=float)
-    n_fine = len(chain[chain_key(chain, n_levels - 1, n_levels)])
-    rates = {}
-    for level in range(n_levels):
-        samples = as_array(chain[chain_key(chain, level, n_levels)])
-        cut = int(round(burnin * samples.shape[0] / n_fine))
-        post = samples[cut:]
-        if post.shape[0] < 2:
-            continue
-        moved = np.any(np.diff(post, axis=0) != 0, axis=1)
-        rates[f"level{level}"] = float(moved.mean())
-    return rates
-
-
-def ess_fine(chain, n_levels, burnin):
-    level = "fine" if chain["sampler"] == "DA" else n_levels - 1
-    idata = tda.to_inference_data(chain, level=level, burnin=burnin,
-                                  parameter_names=["E1", "E2"])
-    ess = az.ess(idata)
-    return {str(v): float(np.ravel(ess[v].values)[0]) for v in ess.data_vars}
-
 
 n_levels = len(levels)
-qoi = extract_qoi(chain, burnin)
-rates = acceptance_rates(chain, n_levels, burnin)
-ess = ess_fine(chain, n_levels, burnin)
+top = n_levels - 1
+
+
+def as_array(links, attribute):
+    return np.array([np.atleast_1d(getattr(l, attribute)) for l in links],
+                    dtype=np.float64)
+
+
+qoi_chain = {l: as_array(chain[f"chain_l{l}_0"], "qoi") for l in range(n_levels)}
+qoi_prom = {l: as_array(chain[f"promoted_l{l}_0"], "qoi") for l in range(top)}
+qoi_chain[top] = qoi_chain[top][len(qoi_chain[top]) - len(qoi_prom[top - 1]):]
+n_top = len(qoi_chain[top])
+
+qoi = {}
+for l in range(n_levels):
+    arr = qoi_chain[l]
+    qoi[f"chain_l{l}"] = arr[int(round(burnin * len(arr) / n_top)):]
+for l in range(top):
+    arr = qoi_prom[l]
+    qoi[f"promoted_l{l}"] = arr[int(round(burnin * len(arr) / n_top)):]
+
+rates = acceptance_rates(chain, burnin)
+pairing = pairing_fractions(chain, burnin)
+
+theta_top = as_array(chain[f"chain_l{top}_0"], "parameters")[1 + burnin:]
+ess = {name: float(az.ess(az.convert_to_dataset(theta_top[None, :, j]))["x"].item())
+       for j, name in enumerate(("E1", "E2"))}
 
 
 # ---------------------------------------------------------------------------
@@ -215,23 +197,31 @@ payload = {
         "iterations": args.iterations,
         "burnin": burnin,
         "sampler": chain["sampler"],
+        "two_level_chain": args.two_level_chain if n_levels == 2 else None,
         "qoi_names": list(QOI_NAMES),
         "acceptance": rates,
+        "acceptance_method": "exact",
+        "pairing": pairing,
         "ess_fine": ess,
+        "chain_file": None if args.no_chains else os.path.basename(chainfile),
     })),
 }
 payload.update({f"qoi__{k}": v for k, v in qoi.items()})
 payload.update({f"acc__{k}": np.array(v) for k, v in rates.items()})
+payload.update({f"pair__{k}": np.array(v) for k, v in pairing.items()})
 payload.update({f"ess__{k}": np.array(v) for k, v in ess.items()})
 
-outfile = os.path.join(outdir, f"vr_{tag}_rep{args.rep:02d}.npz")
-np.savez(outfile, **payload)
+np.savez(stem + ".npz", **payload)
 
 print(f"\n{tag} rep {args.rep}: {runtime/60:.1f} min, sampler={chain['sampler']}")
 for k, v in sorted(rates.items()):
     print(f"  acceptance  {k:12s} {v:.3f}")
+for k, v in sorted(pairing.items()):
+    print(f"  pairing     {k:12s} {v:.3f}")
 for k, v in sorted(ess.items()):
     print(f"  ESS (fine)  {k:12s} {v:8.0f}")
 for k, v in sorted(qoi.items()):
     print(f"  {k:14s} {v.shape}")
-print(f"saved -> {outfile}")
+print(f"saved -> {stem}.npz")
+if not args.no_chains:
+    print(f"         {chainfile}")
