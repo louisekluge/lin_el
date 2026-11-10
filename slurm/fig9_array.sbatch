@@ -29,10 +29,12 @@
 
 set -euo pipefail
 cd "${SLURM_SUBMIT_DIR}"
+export PATH="$HOME/.pixi/bin:$PATH"
+command -v pixi >/dev/null || { echo "pixi not found on PATH=$PATH"; exit 1; }
 
 # One thread per task: numpy would otherwise grab every core on the node.
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
-export PIXI_FROZEN=1
+export PIXI_FROZEN=true
 
 ITERATIONS=${ITERATIONS:-25000}
 BURNIN=${BURNIN:-5000}

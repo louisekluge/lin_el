@@ -46,7 +46,7 @@ np.random.seed(10_000 + args.rep)
 # --- notebook cell 14: proposal --------------------------------------------------------------
 
 # random walk Metropolis
-rwmh_cov = np.eye(2)
+rwmh_cov = np.eye(len(free))
 rmwh_scaling = 0.1
 rwmh_adaptive = True
 my_proposal = tda.GaussianRandomWalk(C=rwmh_cov, scaling=rmwh_scaling, adaptive=rwmh_adaptive)

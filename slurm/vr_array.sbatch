@@ -18,6 +18,8 @@
 #   # then the full sweep
 #   sbatch slurm/vr_array.sbatch
 cd "${SLURM_SUBMIT_DIR}" || exit 1
+export PATH="$HOME/.pixi/bin:$PATH"
+command -v pixi >/dev/null || { echo "pixi not found on PATH=$PATH"; exit 1; }
 
 # dolfinx comes from the pixi environment (`pixi install` once on the login
 # node). OMP_NUM_THREADS=1 keeps BLAS from grabbing every core on the node.
