@@ -42,7 +42,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import arviz as az  # noqa: E402
 import tinyDA as tda  # noqa: E402
 
-from lin_el.models import QOI_NAMES  # noqa: E402
+from lin_el.models import QOI_NAMES, SHEAR_FACTOR  # noqa: E402
 from lin_el.problem import build_problem  # noqa: E402
 from lin_el.sampling import make_adaptive_metropolis  # noqa: E402
 from lin_el.mlda_sampling import (acceptance_rates, make_checkpointer,  # noqa: E402
@@ -60,7 +60,12 @@ _DEFAULT_OUTDIR = os.path.join(_REPO_ROOT, "results")
 
 p = argparse.ArgumentParser()
 p.add_argument("--rep", type=int, required=True, help="repetition index; seeds the sampler only")
-p.add_argument("--levels", default="0,1,2", help="comma-separated level indices, coarse -> fine")
+p.add_argument("--levels", default="0,1,2",
+               help="comma-separated level indices, coarse -> fine; 'gp' as the first entry puts the GP "
+                    "surrogate (--gp-file) at the bottom, e.g. gp,2 or gp,0,2")
+p.add_argument("--gp-file", default=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                                 "surrogate", "gp_laminate_l2_n16.pkl"),
+               help="GP trained by scripts/train_gp.py")
 p.add_argument("--iterations", type=int, default=5000, help="fine-level iterations")
 p.add_argument("--subchain-length", type=int, default=10)
 p.add_argument("--no-randomize", action="store_true",
@@ -78,7 +83,10 @@ p.add_argument("--tag", default="", help="label for the output filename")
 p.add_argument("--outdir", default=_DEFAULT_OUTDIR)
 args = p.parse_args()
 
-levels = [int(s) for s in args.levels.split(",")]
+levels = [s if s == "gp" else int(s) for s in args.levels.split(",")]
+if "gp" in levels[1:]:
+    raise SystemExit("the GP can only be the bottom level")
+fem_levels = [l for l in levels if l != "gp"]
 if len(levels) < 2:
     raise SystemExit("variance reduction needs at least two levels")
 burnin = args.iterations // 5
@@ -103,8 +111,26 @@ print(f"rep={args.rep} levels={levels} J={args.subchain_length} "
 # Problem (fixed seed) and sampler (per-repetition seed)
 # ---------------------------------------------------------------------------
 
-problem = build_problem(n_levels=max(levels) + 1)
-posteriors = problem.posteriors(levels, adaptive_coarse=not args.no_aem)
+problem = build_problem(n_levels=max(fem_levels) + 1)
+posteriors = problem.posteriors(fem_levels, adaptive_coarse=not args.no_aem)
+if levels[0] == "gp":
+    import pickle
+    from lin_el.surrogate import GPLevel, GPLogLikeLevel, IdentityLogLike
+    with open(args.gp_file, "rb") as fh:
+        gp_obj = pickle.load(fh)
+    if isinstance(gp_obj, GPLogLikeLevel):
+        # surrogate of the log-likelihood itself: no output vector, so no AEM anywhere in the hierarchy
+        if not args.no_aem:
+            raise SystemExit(f"{os.path.basename(args.gp_file)} is a log-likelihood GP: run with --no-aem")
+        print(f"GP bottom level (log-likelihood): {os.path.basename(args.gp_file)} {gp_obj.info}")
+        posteriors.insert(0, tda.Posterior(problem.prior, IdentityLogLike(), gp_obj))
+    else:
+        gp_level = GPLevel(args.gp_file)
+        print(f"GP bottom level: {os.path.basename(args.gp_file)}, trained on FEM level {gp_level.info['level']}")
+        cov = problem.noise_sd ** 2 * np.eye(problem.data.size)
+        gp_loglike = (tda.GaussianLogLike(problem.data, cov) if args.no_aem
+                      else tda.AdaptiveGaussianLogLike(problem.data, cov))
+        posteriors.insert(0, tda.Posterior(problem.prior, gp_loglike, gp_level))
 
 np.random.seed(4242 + args.rep)
 c0 = (np.diag([float(s) ** 2 for s in args.c0.split(",")])
@@ -191,6 +217,7 @@ payload = {
     "meta": np.array(json.dumps({
         "rep": args.rep,
         "levels": levels,
+        "gp_file": os.path.basename(args.gp_file) if levels[0] == "gp" else None,
         "subchain_length": args.subchain_length,
         "randomize": not args.no_randomize,
         "aem": not args.no_aem,
@@ -199,6 +226,7 @@ payload = {
         "sampler": chain["sampler"],
         "two_level_chain": args.two_level_chain if n_levels == 2 else None,
         "qoi_names": list(QOI_NAMES),
+        "shear_factor": SHEAR_FACTOR,
         "acceptance": rates,
         "acceptance_method": "exact",
         "pairing": pairing,

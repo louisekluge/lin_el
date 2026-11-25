@@ -1,0 +1,3 @@
+gp_l2_J200_rand   gp,2   100   --no-aem --gp-file surrogate/gp_ll_l2_n200.pkl
+gp_l2_J50_rand    gp,2   50    --no-aem --gp-file surrogate/gp_ll_l2_n200.pkl
+gp_l2_J10_rand    gp,2   10    --no-aem --gp-file surrogate/gp_ll_l2_n200.pkl

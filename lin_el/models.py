@@ -39,7 +39,7 @@ from .helpers import interpolate_nonmatching
 # Set to 2.0 for the textbook law -- but then regenerate the data and redo any
 # reference runs, because the posterior moves.
 # ---------------------------------------------------------------------------
-SHEAR_FACTOR = 1.0
+SHEAR_FACTOR = 2.0
 
 # QoI component names, in the order returned by LinearElasticity.__call__.
 QOI_NAMES = ("tip_deflection", "mean_von_mises", "compliance")

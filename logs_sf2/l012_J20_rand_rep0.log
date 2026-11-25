@@ -1,0 +1,4 @@
+rep=0 levels=[0, 1, 2] J=20 iters=10000 burnin=2000
+  Laplace C0: sd=[2.987 1.11 ] corr=-0.967
+Sampling chain 1/1
+    1%  100/10000     8.0 min elapsed, ~ 790.9 left      0.2 it/s  level0=0.541  level1=0.904  level2=1.000

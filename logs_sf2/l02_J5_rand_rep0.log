@@ -1,0 +1,14 @@
+usage: vr_run.py [-h] --rep REP [--levels LEVELS] [--gp-file GP_FILE]
+                 [--iterations ITERATIONS] [--subchain-length SUBCHAIN_LENGTH]
+                 [--no-randomize] [--no-aem] [--c0 C0] [--no-laplace]
+                 [--two-level-chain {da,mlda}] [--no-chains] [--tag TAG]
+                 [--outdir OUTDIR]
+vr_run.py: error: argument --subchain-length: invalid int value: '5gp_l2_J200_rand'
+Abort(808576911): Fatal error in internal_Finalize: Other MPI error, error stack:
+internal_Finalize(50)...........: MPI_Finalize failed
+MPII_Finalize(421)..............: 
+MPID_Finalize(711)..............: 
+MPIDI_OFI_mpi_finalize_hook(861): 
+flush_send_queue(830)...........: 
+MPIDI_NM_progress(108)..........: 
+MPIDI_OFI_handle_cq_error(593)..: OFI poll failed (default nic=utun10: Input/output error)

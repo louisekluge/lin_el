@@ -1,0 +1,122 @@
+rep=0 levels=[0, 2] J=10 iters=10000 burnin=2000
+  Laplace C0: sd=[1.624 0.624] corr=-0.967
+Sampling chain 1/1
+    1%  100/10000     0.7 min elapsed, ~  70.4 left      2.3 it/s  level0=0.238  level1=0.550
+    2%  200/10000     1.7 min elapsed, ~  81.2 left      1.8 it/s  level0=0.284  level1=0.630
+    3%  300/10000     3.1 min elapsed, ~ 101.8 left      1.1 it/s  level0=0.310  level1=0.667
+    4%  400/10000     3.8 min elapsed, ~  91.2 left      2.6 it/s  level0=0.331  level1=0.680
+    5%  500/10000     4.4 min elapsed, ~  84.5 left      2.6 it/s  level0=0.346  level1=0.712
+    6%  600/10000     5.1 min elapsed, ~  80.2 left      2.5 it/s  level0=0.359  level1=0.730
+    7%  700/10000     5.8 min elapsed, ~  77.2 left      2.4 it/s  level0=0.373  level1=0.749
+    8%  800/10000     6.5 min elapsed, ~  74.7 left      2.5 it/s  level0=0.384  level1=0.756
+    9%  900/10000     7.2 min elapsed, ~  72.3 left      2.5 it/s  level0=0.394  level1=0.759
+   10%  1000/10000     7.8 min elapsed, ~  70.3 left      2.5 it/s  level0=0.406  level1=0.761
+   11%  1100/10000     8.5 min elapsed, ~  68.7 left      2.4 it/s  level0=0.412  level1=0.770
+   12%  1200/10000     9.2 min elapsed, ~  67.2 left      2.5 it/s  level0=0.419  level1=0.777
+   13%  1300/10000     9.8 min elapsed, ~  65.8 left      2.5 it/s  level0=0.424  level1=0.775
+   14%  1400/10000    10.5 min elapsed, ~  64.5 left      2.5 it/s  level0=0.428  level1=0.782
+   15%  1500/10000    11.2 min elapsed, ~  63.4 left      2.4 it/s  level0=0.433  level1=0.789
+   16%  1600/10000    11.9 min elapsed, ~  62.3 left      2.5 it/s  level0=0.436  level1=0.791
+   17%  1700/10000    12.6 min elapsed, ~  61.3 left      2.4 it/s  level0=0.441  level1=0.794
+   18%  1800/10000    13.2 min elapsed, ~  60.2 left      2.5 it/s  level0=0.444  level1=0.794
+   19%  1900/10000    13.9 min elapsed, ~  59.3 left      2.5 it/s  level0=0.448  level1=0.796
+   20%  2000/10000    14.6 min elapsed, ~  58.3 left      2.4 it/s  level0=0.452  level1=0.799
+   21%  2100/10000    15.3 min elapsed, ~  57.4 left      2.5 it/s  level0=0.453  level1=0.799
+   22%  2200/10000    15.9 min elapsed, ~  56.5 left      2.5 it/s  level0=0.457  level1=0.801
+   23%  2300/10000    16.6 min elapsed, ~  55.6 left      2.5 it/s  level0=0.460  level1=0.802
+   24%  2400/10000    17.3 min elapsed, ~  54.9 left      2.3 it/s  level0=0.463  level1=0.804
+   25%  2500/10000    18.0 min elapsed, ~  54.0 left      2.4 it/s  level0=0.465  level1=0.806
+   26%  2600/10000    18.7 min elapsed, ~  53.2 left      2.5 it/s  level0=0.467  level1=0.805
+   27%  2700/10000    19.3 min elapsed, ~  52.3 left      2.5 it/s  level0=0.470  level1=0.806
+   28%  2800/10000    20.0 min elapsed, ~  51.4 left      2.6 it/s  level0=0.472  level1=0.804
+   29%  2900/10000    20.6 min elapsed, ~  50.5 left      2.5 it/s  level0=0.474  level1=0.804
+   30%  3000/10000    21.3 min elapsed, ~  49.8 left      2.4 it/s  level0=0.476  level1=0.805
+   31%  3100/10000    22.0 min elapsed, ~  49.0 left      2.5 it/s  level0=0.478  level1=0.804
+   32%  3200/10000    22.7 min elapsed, ~  48.2 left      2.5 it/s  level0=0.480  level1=0.805
+   33%  3300/10000    23.3 min elapsed, ~  47.4 left      2.5 it/s  level0=0.482  level1=0.805
+   34%  3400/10000    24.0 min elapsed, ~  46.6 left      2.4 it/s  level0=0.484  level1=0.806
+   35%  3500/10000    24.7 min elapsed, ~  45.9 left      2.5 it/s  level0=0.485  level1=0.806
+   36%  3600/10000    25.4 min elapsed, ~  45.1 left      2.5 it/s  level0=0.487  level1=0.806
+   37%  3700/10000    26.1 min elapsed, ~  44.4 left      2.4 it/s  level0=0.488  level1=0.807
+   38%  3800/10000    26.7 min elapsed, ~  43.6 left      2.5 it/s  level0=0.490  level1=0.807
+   39%  3900/10000    27.4 min elapsed, ~  42.9 left      2.5 it/s  level0=0.491  level1=0.808
+   40%  4000/10000    28.1 min elapsed, ~  42.1 left      2.4 it/s  level0=0.493  level1=0.810
+   41%  4100/10000    28.8 min elapsed, ~  41.4 left      2.5 it/s  level0=0.493  level1=0.810
+   42%  4200/10000    29.5 min elapsed, ~  40.7 left      2.4 it/s  level0=0.494  level1=0.811
+   43%  4300/10000    30.1 min elapsed, ~  39.9 left      2.5 it/s  level0=0.495  level1=0.810
+   44%  4400/10000    30.8 min elapsed, ~  39.2 left      2.5 it/s  level0=0.496  level1=0.810
+   45%  4500/10000    31.5 min elapsed, ~  38.5 left      2.5 it/s  level0=0.497  level1=0.811
+   46%  4600/10000    32.2 min elapsed, ~  37.8 left      2.4 it/s  level0=0.499  level1=0.814
+   47%  4700/10000    32.8 min elapsed, ~  37.0 left      2.4 it/s  level0=0.500  level1=0.816
+   48%  4800/10000    33.5 min elapsed, ~  36.3 left      2.5 it/s  level0=0.500  level1=0.816
+   49%  4900/10000    34.2 min elapsed, ~  35.6 left      2.5 it/s  level0=0.501  level1=0.815
+   50%  5000/10000    34.9 min elapsed, ~  34.9 left      2.4 it/s  level0=0.501  level1=0.817
+   51%  5100/10000    35.6 min elapsed, ~  34.2 left      2.5 it/s  level0=0.502  level1=0.817
+   52%  5200/10000    36.2 min elapsed, ~  33.5 left      2.4 it/s  level0=0.503  level1=0.818
+   53%  5300/10000    36.9 min elapsed, ~  32.7 left      2.5 it/s  level0=0.504  level1=0.818
+   54%  5400/10000    38.0 min elapsed, ~  32.4 left      1.5 it/s  level0=0.505  level1=0.819
+   55%  5500/10000    39.4 min elapsed, ~  32.3 left      1.2 it/s  level0=0.506  level1=0.819
+   56%  5600/10000    40.9 min elapsed, ~  32.1 left      1.2 it/s  level0=0.507  level1=0.819
+   57%  5700/10000    42.3 min elapsed, ~  31.9 left      1.1 it/s  level0=0.509  level1=0.820
+   58%  5800/10000    43.1 min elapsed, ~  31.2 left      2.2 it/s  level0=0.510  level1=0.821
+   59%  5900/10000    43.8 min elapsed, ~  30.4 left      2.5 it/s  level0=0.511  level1=0.821
+   60%  6000/10000    44.4 min elapsed, ~  29.6 left      2.4 it/s  level0=0.512  level1=0.822
+   61%  6100/10000    45.1 min elapsed, ~  28.8 left      2.5 it/s  level0=0.512  level1=0.823
+   62%  6200/10000    45.8 min elapsed, ~  28.1 left      2.5 it/s  level0=0.513  level1=0.824
+   63%  6300/10000    46.4 min elapsed, ~  27.3 left      2.5 it/s  level0=0.513  level1=0.824
+   64%  6400/10000    47.1 min elapsed, ~  26.5 left      2.6 it/s  level0=0.513  level1=0.824
+   65%  6500/10000    47.8 min elapsed, ~  25.7 left      2.5 it/s  level0=0.514  level1=0.825
+   66%  6600/10000    48.4 min elapsed, ~  25.0 left      2.5 it/s  level0=0.515  level1=0.825
+   67%  6700/10000    49.1 min elapsed, ~  24.2 left      2.5 it/s  level0=0.515  level1=0.825
+   68%  6800/10000    49.8 min elapsed, ~  23.4 left      2.5 it/s  level0=0.515  level1=0.825
+   69%  6900/10000    50.4 min elapsed, ~  22.7 left      2.5 it/s  level0=0.515  level1=0.825
+   70%  7000/10000    51.0 min elapsed, ~  21.9 left      2.7 it/s  level0=0.516  level1=0.825
+   71%  7100/10000    51.7 min elapsed, ~  21.1 left      2.6 it/s  level0=0.516  level1=0.825
+   72%  7200/10000    52.4 min elapsed, ~  20.4 left      2.5 it/s  level0=0.517  level1=0.825
+   73%  7300/10000    53.0 min elapsed, ~  19.6 left      2.5 it/s  level0=0.517  level1=0.826
+   74%  7400/10000    53.7 min elapsed, ~  18.9 left      2.6 it/s  level0=0.517  level1=0.826
+   75%  7500/10000    54.3 min elapsed, ~  18.1 left      2.5 it/s  level0=0.518  level1=0.826
+   76%  7600/10000    55.0 min elapsed, ~  17.4 left      2.4 it/s  level0=0.518  level1=0.828
+   77%  7700/10000    55.7 min elapsed, ~  16.6 left      2.5 it/s  level0=0.518  level1=0.828
+   78%  7800/10000    56.4 min elapsed, ~  15.9 left      2.5 it/s  level0=0.518  level1=0.828
+   79%  7900/10000    57.0 min elapsed, ~  15.2 left      2.5 it/s  level0=0.518  level1=0.829
+   80%  8000/10000    57.7 min elapsed, ~  14.4 left      2.5 it/s  level0=0.518  level1=0.829
+   81%  8100/10000    58.4 min elapsed, ~  13.7 left      2.5 it/s  level0=0.519  level1=0.828
+   82%  8200/10000    59.0 min elapsed, ~  13.0 left      2.5 it/s  level0=0.519  level1=0.828
+   83%  8300/10000    59.7 min elapsed, ~  12.2 left      2.4 it/s  level0=0.519  level1=0.829
+   84%  8400/10000    60.3 min elapsed, ~  11.5 left      2.6 it/s  level0=0.520  level1=0.829
+   85%  8500/10000    61.0 min elapsed, ~  10.8 left      2.5 it/s  level0=0.520  level1=0.829
+   86%  8600/10000    61.7 min elapsed, ~  10.0 left      2.5 it/s  level0=0.520  level1=0.830
+   87%  8700/10000    62.3 min elapsed, ~   9.3 left      2.6 it/s  level0=0.520  level1=0.830
+   88%  8800/10000    63.0 min elapsed, ~   8.6 left      2.5 it/s  level0=0.521  level1=0.830
+   89%  8900/10000    63.7 min elapsed, ~   7.9 left      2.5 it/s  level0=0.521  level1=0.830
+   90%  9000/10000    64.3 min elapsed, ~   7.1 left      2.6 it/s  level0=0.521  level1=0.829
+   91%  9100/10000    65.0 min elapsed, ~   6.4 left      2.6 it/s  level0=0.522  level1=0.829
+   92%  9200/10000    65.6 min elapsed, ~   5.7 left      2.5 it/s  level0=0.522  level1=0.829
+   93%  9300/10000    66.3 min elapsed, ~   5.0 left      2.5 it/s  level0=0.523  level1=0.830
+   94%  9400/10000    66.9 min elapsed, ~   4.3 left      2.5 it/s  level0=0.523  level1=0.830
+   95%  9500/10000    67.6 min elapsed, ~   3.6 left      2.6 it/s  level0=0.523  level1=0.829
+   96%  9600/10000    68.3 min elapsed, ~   2.8 left      2.5 it/s  level0=0.523  level1=0.830
+   97%  9700/10000    68.9 min elapsed, ~   2.1 left      2.5 it/s  level0=0.524  level1=0.830
+   98%  9800/10000    69.6 min elapsed, ~   1.4 left      2.5 it/s  level0=0.524  level1=0.830
+   99%  9900/10000    70.3 min elapsed, ~   0.7 left      2.5 it/s  level0=0.524  level1=0.830
+  100%  10000/10000    71.0 min elapsed, ~   0.0 left      2.5 it/s  level0=0.524  level1=0.830
+
+l02_J10_rand rep 0: 71.0 min, sampler=DA
+  acceptance  level0       0.542
+  acceptance  level1       0.838
+  pairing     Y_10         0.926
+  ESS (fine)  E1               2937
+  ESS (fine)  E2               3148
+  chain_l0       (80002, 3)
+  chain_l1       (8001, 3)
+  promoted_l0    (8001, 3)
+saved -> results/el_sweep/vr_l02_J10_rand_rep00.npz
+Abort(808576911): Fatal error in internal_Finalize: Other MPI error, error stack:
+internal_Finalize(50)...........: MPI_Finalize failed
+MPII_Finalize(421)..............: 
+MPID_Finalize(711)..............: 
+MPIDI_OFI_mpi_finalize_hook(861): 
+flush_send_queue(830)...........: 
+MPIDI_NM_progress(108)..........: 
+MPIDI_OFI_handle_cq_error(593)..: OFI poll failed (default nic=utun10: Input/output error)

@@ -1,0 +1,7 @@
+rep=0 levels=[0, 1, 2] J=10 iters=10000 burnin=2000
+ld: warning: duplicate -rpath '/Users/louisekluge/lin_el/.pixi/envs/default/lib' ignored
+  Laplace C0: sd=[2.987 1.11 ] corr=-0.967
+Sampling chain 1/1
+    1%  100/10000     2.3 min elapsed, ~ 227.0 left      0.7 it/s  level0=0.534  level1=0.839  level2=1.000
+    2%  200/10000     4.7 min elapsed, ~ 228.1 left      0.7 it/s  level0=0.541  level1=0.858  level2=0.980
+    3%  300/10000     7.0 min elapsed, ~ 227.2 left      0.7 it/s  level0=0.542  level1=0.867  level2=0.973
